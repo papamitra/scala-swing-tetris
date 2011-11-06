@@ -11,7 +11,7 @@ trait Tetris{
   def height:Int = 20
   def width:Int = 15
   case class Point(val isExist:Boolean=false, val color:Color=Color.BLACK)
-  lazy val field = List.fill(height+4)(Array.fill(width)(new Point))
+  var field = List.fill(height+4)(Array.fill(width)(new Point))
   lazy val random = new Random(System.currentTimeMillis)
 
   final case class BlockShape(val pattern:Array[(Int, Int)], val color:Color)
@@ -83,8 +83,14 @@ trait Tetris{
 
   }
 
-  var block = new Block(width/2, height, 100, 2, newShape)
+  var block = new Block(width/2, height+1, 100, 2, newShape)
 
+  private def deleteBlocks(){
+    val newField = field.dropWhile(_.forall(_.isExist))
+    field = newField ++ List.fill(field.size - newField.size)(Array.fill(width)(new Point))
+  }
+
+  
   def start(){
     println("start")
     spawn{
@@ -96,7 +102,12 @@ trait Tetris{
 	    block.tick=0
 	  }else{
 	    block.union()
-	    block = new Block(width/2, height, 100, 2, newShape)
+	    if(block.y == height+1){
+	      // GameOver
+	      field = List.fill(height+4)(Array.fill(width)(new Point))
+	    }else
+	      deleteBlocks()
+	    block = new Block(width/2, height+1, 100, 2, newShape)
 	  }
 	}
 	}
