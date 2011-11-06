@@ -153,11 +153,16 @@ object Main extends SimpleSwingApplication{
       }
       def drawBlock(x:Int, y:Int, c:Color, g:Graphics2D){
 	val (offsetx, offsety) = (1, 4)
+	val posx = (x + offsetx) *aSize
+	val posy = ((height-y)+ offsety) * aSize
+
 	g.setColor(c)
-	g.fillRect((x + offsetx) *aSize, ((height-y)+ offsety) * aSize, aSize, aSize)
+	g.fillRect(posx, posy, aSize-1, aSize-1)
+	g.setColor(Color.WHITE)
+	g.drawRect(posx, posy, aSize-1, aSize-1)
 	g.setColor(Color.BLACK)
-	g.drawLine((x + offsetx) *aSize, ((height-y)+ offsety) * aSize,(x + offsetx) *aSize, ((height-y)+ offsety+1) * aSize)
-	g.drawLine((x + offsetx) *aSize, ((height-y)+ offsety+1) * aSize-1,(x + offsetx+1) *aSize, ((height-y)+ offsety+1) * aSize-1)
+	g.drawLine(posx, posy, posx, posy+aSize-1)
+	g.drawLine(posx, posy+aSize-1, posx+aSize-1, posy+aSize-1)
       }
 
       listenTo(keys,mouse.clicks)
