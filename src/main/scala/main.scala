@@ -86,7 +86,7 @@ trait Tetris{
   var block = new Block(width/2, height+1, 100, 2, newShape)
 
   private def deleteBlocks(){
-    val newField = field.dropWhile(_.forall(_.isExist))
+    val newField = field.filterNot(_.forall(_.isExist))
     field = newField ++ List.fill(field.size - newField.size)(Array.fill(width)(new Point))
   }
 
