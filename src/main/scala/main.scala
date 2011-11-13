@@ -55,9 +55,10 @@ trait TetrisModesImpl extends TetrisModels{
     blocks(i)
   }
 
-  var block:Block = Block(width/2, height+1, 100, 2, newShape)
+  def createBlock = Block(width/2-2, height, 100, 0, newShape)
+  var block:Block = createBlock
 
-  case class Block(var x:Int, var y:Int, val speed:Int, var direction:Int, val shape:BlockShape, var tick:Int=0) extends TBlock{
+  case class Block(var x:Int, var y:Int, val speed:Int, var direction:Int, val shape:Tetrimino, var tick:Int=0) extends TBlock{
     def rotate(){
       val newDirection = (direction + 1) % 4
       if(isPossible(copy(direction = newDirection)))
@@ -132,12 +133,12 @@ trait TetrisModesImpl extends TetrisModels{
 	    block.tick=0
 	  }else{
 	    union(block)
-	    if(block.y == height+1){
+	    if(block.y >= height){
 	      // GameOver
 	      clearBlocks()
 	    }else
 	      deleteBlocks()
-	    block = new Block(width/2, height+1, 100, 2, newShape)
+	    block = createBlock
 	  }
 	}
 	}
@@ -159,23 +160,30 @@ trait TetrisViewsImpl extends TetrisViews{
     synchronized{
       block.position.foreach{
 	case (x,y) =>
-	  drawBlock(block.x + x, block.y + y, block.color ,g)
+	  drawBlock(block.x + x, block.y + y, g, block.color)
       }
       for((a,y) <- field.zipWithIndex;
 	  (p,x) <- a.zipWithIndex){
 	    if(p.isExist)
-	      drawBlock(x,y,p.color,g)
+	      drawBlock(x,y,g, p.color)
 	  }
     }
   }
 
   def drawBackground(g:Graphics2D){
     g.setColor(Color.BLACK)
-    g.fillRect(1 * aSize, 4*aSize, width*aSize, (height+1)*aSize)
+    g.fillRect(1 * aSize, 5*aSize, width*aSize, height*aSize)
+    for(h <- Range(0,height)){
+      drawBlock(-1, h, g, Color.LIGHT_GRAY)
+      drawBlock(width, h, g, Color.LIGHT_GRAY)
+    }
+    for(w <- Range(-1,width+1)){
+      drawBlock(w, -1, g, Color.LIGHT_GRAY)
+    }
   }
-  def drawBlock(x:Int, y:Int, c:Color, g:Graphics2D){
+  def drawBlock(x:Int, y:Int, g:Graphics2D, c:Color){
     val (offsetx, offsety) = (1, 4)
-      val posx = (x + offsetx) *aSize
+    val posx = (x + offsetx) *aSize
     val posy = ((height-y)+ offsety) * aSize
 
     g.setColor(c)
@@ -211,7 +219,7 @@ object Main extends SimpleSwingApplication{
     val aSize = 20
     val panel = new Panel() with TetrisModesImpl with TetrisViewsImpl with TetrisControlsImpl{
       focusable = true
-      peer.setPreferredSize(new Dimension((width + 2) * aSize, (height + 5) * aSize))
+      peer.setPreferredSize(new Dimension((width + 2) * aSize, (height + 6) * aSize))
       override def paintComponent(g:Graphics2D){
 	super.paintComponent(g)
 	paintBlocks(g)
