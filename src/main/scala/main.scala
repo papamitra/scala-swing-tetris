@@ -10,7 +10,7 @@ trait TetrisModels{
   def height:Int
   def width:Int
 
-  trait TBlock{
+  trait Tetrimino{
     def x:Int
     def y:Int
     def color:Color
@@ -21,36 +21,37 @@ trait TetrisModels{
     def down():Boolean
   }
   case class Point(val isExist:Boolean=false, val color:Color=Color.BLACK)
-  def block:TBlock
+  type T <: Tetrimino
+  def block:T
   var field:List[Array[Point]]
 }
 
 trait TetrisViews{
   def reflect:Unit
+  type GC
+  def drawMino(g:GC)
 }
 
 trait TetrisControls{
 }
 
-trait Ghost{
-  self: TetrisModels=>
-}
 
-trait TetrisModesImpl extends TetrisModels{
+trait TetrisModelsImpl extends TetrisModels{
   self: TetrisViews =>
+  type T=Block
   def height:Int = 20
   def width:Int = 10
 
   var field = List.fill(height+4)(Array.fill(width)(new Point))
   lazy val random = new Random(System.currentTimeMillis)
 
-  final case class Tetrimino(val pattern:Array[(Int, Int)], val color:Color)
-  val blocks = Array(Tetrimino(Array((0,0),(1,0),(2,0),(0,1)), Color.BLUE),
-		     Tetrimino(Array((0,0),(1,0),(0,1),(1,1)), Color.YELLOW),
-		     Tetrimino(Array((0,0),(1,0),(2,0),(3,0)), Color.RED),
-		     Tetrimino(Array((0,0),(1,0),(1,1),(2,1)), Color.GREEN),
-		     Tetrimino(Array((0,0),(2,1),(1,0),(2,0)), Color.CYAN),
-		     Tetrimino(Array((0,0),(1,1),(1,0),(2,0)), Color.ORANGE))
+  final case class MinoShape(val pattern:Array[(Int, Int)], val color:Color)
+  val blocks = Array(MinoShape(Array((0,0),(1,0),(2,0),(0,1)), Color.BLUE),
+		     MinoShape(Array((0,0),(1,0),(0,1),(1,1)), Color.YELLOW),
+		     MinoShape(Array((0,0),(1,0),(2,0),(3,0)), Color.RED),
+		     MinoShape(Array((0,0),(1,0),(1,1),(2,1)), Color.GREEN),
+		     MinoShape(Array((0,0),(2,1),(1,0),(2,0)), Color.CYAN),
+		     MinoShape(Array((0,0),(1,1),(1,0),(2,0)), Color.ORANGE))
   val blockNum = blocks.size
   
   def newShape = {
@@ -62,7 +63,7 @@ trait TetrisModesImpl extends TetrisModels{
   def createBlock = Block(width/2-2, height, 100, 0, newShape)
   var block:Block = createBlock
 
-  case class Block(var x:Int, var y:Int, val speed:Int, var direction:Int, val shape:Tetrimino, var tick:Int=0) extends TBlock{
+  case class Block(var x:Int, var y:Int, val speed:Int, var direction:Int, val shape:MinoShape, var tick:Int=0) extends Tetrimino{
     def rotate(){
       val newDirection = (direction + 1) % 4
       if(isPossible(copy(direction = newDirection)))
@@ -156,6 +157,7 @@ trait TetrisModesImpl extends TetrisModels{
 
 trait TetrisViewsImpl extends TetrisViews{
   self: Panel with TetrisModels=>
+  type GC=Graphics2D
   val aSize = 20
   def reflect = repaint
 
@@ -168,11 +170,16 @@ trait TetrisViewsImpl extends TetrisViews{
   }
 
   def drawMino(g:Graphics2D){
+    drawMino(block, g)
+  }
+
+  def drawMino(block:Tetrimino, g:Graphics2D){
       block.position.foreach{
 	case (x,y) =>
 	  drawBlock(block.x + x, block.y + y, g, block.color)
       }
   }
+
   def drawField(g:Graphics2D){
       for((a,y) <- field.zipWithIndex;
 	  (p,x) <- a.zipWithIndex){
