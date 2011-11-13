@@ -32,6 +32,10 @@ trait TetrisViews{
 trait TetrisControls{
 }
 
+trait Ghost{
+  self: TetrisModels=>
+}
+
 trait TetrisModesImpl extends TetrisModels{
   self: TetrisViews =>
   def height:Int = 20
@@ -151,25 +155,31 @@ trait TetrisModesImpl extends TetrisModels{
 }
 
 trait TetrisViewsImpl extends TetrisViews{
-  self: Panel with TetrisModels =>
+  self: Panel with TetrisModels=>
   val aSize = 20
   def reflect = repaint
 
-  def paintBlocks(g:Graphics2D) = {
-    drawBackground(g)
+  def paintBlocks(g:Graphics2D){
     synchronized{
+      drawBackground(g)
+      drawMino(g)
+      drawField(g)
+    }
+  }
+
+  def drawMino(g:Graphics2D){
       block.position.foreach{
 	case (x,y) =>
 	  drawBlock(block.x + x, block.y + y, g, block.color)
       }
+  }
+  def drawField(g:Graphics2D){
       for((a,y) <- field.zipWithIndex;
 	  (p,x) <- a.zipWithIndex){
 	    if(p.isExist)
 	      drawBlock(x,y,g, p.color)
 	  }
-    }
   }
-
   def drawBackground(g:Graphics2D){
     g.setColor(Color.BLACK)
     g.fillRect(1 * aSize, 5*aSize, width*aSize, height*aSize)
@@ -181,6 +191,7 @@ trait TetrisViewsImpl extends TetrisViews{
       drawBlock(w, -1, g, Color.LIGHT_GRAY)
     }
   }
+
   def drawBlock(x:Int, y:Int, g:Graphics2D, c:Color){
     val (offsetx, offsety) = (1, 4)
     val posx = (x + offsetx) *aSize
@@ -223,7 +234,7 @@ object Main extends SimpleSwingApplication{
       override def paintComponent(g:Graphics2D){
 	super.paintComponent(g)
 	paintBlocks(g)
-      }
+    }
     }
 
     contents = panel
