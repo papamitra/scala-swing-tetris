@@ -35,18 +35,18 @@ trait TetrisControls{
 trait TetrisModesImpl extends TetrisModels{
   self: TetrisViews =>
   def height:Int = 20
-  def width:Int = 15
+  def width:Int = 10
 
   var field = List.fill(height+4)(Array.fill(width)(new Point))
   lazy val random = new Random(System.currentTimeMillis)
 
-  final case class BlockShape(val pattern:Array[(Int, Int)], val color:Color)
-  val blocks = Array(BlockShape(Array((0,0),(1,0),(2,0),(0,1)), Color.BLUE),
-		     BlockShape(Array((0,0),(1,0),(0,1),(1,1)), Color.YELLOW),
-		     BlockShape(Array((0,0),(1,0),(2,0),(3,0)), Color.RED),
-		     BlockShape(Array((0,0),(1,0),(1,1),(2,1)), Color.GREEN),
-		     BlockShape(Array((0,0),(2,1),(1,0),(2,0)), Color.CYAN),
-		     BlockShape(Array((0,0),(1,1),(1,0),(2,0)), Color.ORANGE))
+  final case class Tetrimino(val pattern:Array[(Int, Int)], val color:Color)
+  val blocks = Array(Tetrimino(Array((0,0),(1,0),(2,0),(0,1)), Color.BLUE),
+		     Tetrimino(Array((0,0),(1,0),(0,1),(1,1)), Color.YELLOW),
+		     Tetrimino(Array((0,0),(1,0),(2,0),(3,0)), Color.RED),
+		     Tetrimino(Array((0,0),(1,0),(1,1),(2,1)), Color.GREEN),
+		     Tetrimino(Array((0,0),(2,1),(1,0),(2,0)), Color.CYAN),
+		     Tetrimino(Array((0,0),(1,1),(1,0),(2,0)), Color.ORANGE))
   val blockNum = blocks.size
   
   def newShape = {
