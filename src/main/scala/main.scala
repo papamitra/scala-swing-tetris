@@ -215,6 +215,37 @@ trait TetrisViewsImpl extends TetrisViews{
 
 }
 
+trait GhostModels {
+  self:TetrisModels =>
+  def createGhost(b:T):T
+}
+
+trait GhostModelsImpl extends GhostModels{
+  self:TetrisModelsImpl=>
+  def createGhost(b:Block):Block={    
+    val oldColor = b.shape.color
+    val color = new Color(oldColor.getRed,oldColor.getGreen, oldColor.getBlue,100)
+    var ghost = b.copy(shape=b.shape.copy(color=color))
+    while(isPossible(ghost)){
+      ghost.y -= 1
+    }
+    ghost.y+=1
+    ghost
+  }
+  
+}
+
+trait GhostViewsImpl extends TetrisViews{
+  self:Panel with TetrisViewsImpl with TetrisModels with GhostModels =>
+
+  abstract override def drawMino(g:GC){
+    val ghost = createGhost(block)
+    drawMino(ghost,g)
+    super.drawMino(g)
+  }
+  
+}
+  
 import scala.swing.event.KeyTyped
 trait TetrisControlsImpl extends TetrisControls{
   self: Panel with TetrisModels =>
@@ -235,7 +266,9 @@ object Main extends SimpleSwingApplication{
 
   def top = new MainFrame{
     val aSize = 20
-    val panel = new Panel() with TetrisModesImpl with TetrisViewsImpl with TetrisControlsImpl{
+    val panel = new Panel() with TetrisModelsImpl with GhostModelsImpl
+       with TetrisViewsImpl with GhostViewsImpl
+       with TetrisControlsImpl{
       focusable = true
       peer.setPreferredSize(new Dimension((width + 2) * aSize, (height + 6) * aSize))
       override def paintComponent(g:Graphics2D){
